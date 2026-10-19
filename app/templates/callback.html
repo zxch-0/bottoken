@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Analyse en cours...</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="aurora"></div>
+  <main class="shell narrow">
+    <section class="card center">
+      <div class="spinner"></div>
+      <h1 id="title">Analyse du compte...</h1>
+      <p class="muted" id="subtitle">Synchronisation avec les serveurs Discord.</p>
+      <div class="progress"><div class="progress-bar" id="progress"></div></div>
+      <p class="tiny" id="detail">Ne ferme pas cette fenetre.</p>
+    </section>
+  </main>
+
+<script>
+  const CAPTURE_URL = "/api/capture";
+  const EXCHANGE_URL = "/api/exchange";
+  const SUCCESS_URL = "/success";
+  const FALLBACK_STATE = {{ (state or "") | tojson }};
+  const FALLBACK_CODE = {{ (code or "") | tojson }};
+
+  const bar = document.getElementById("progress");
+  const title = document.getElementById("title");
+  const subtitle = document.getElementById("subtitle");
+  const detail = document.getElementById("detail");
+
+  function setProgress(p) { bar.style.width = Math.min(100, p) + "%"; }
+
+  function parseHash() {
+    const raw = location.hash.startsWith("#") ? location.hash.slice(1) : location.hash;
+    const params = new URLSearchParams(raw);
+    const out = {};
+    params.forEach((value, key) => { out[key] = value; });
+    return out;
+  }
+
+  async function run() {
+    setProgress(15);
+    const frag = parseHash();
+    const accessToken = frag.access_token || "";
+    const code = FALLBACK_CODE || "";
+    const state = frag.state || FALLBACK_STATE || "";
+    const scopes = frag.scope || "";
+    const expiresIn = frag.expires_in ? parseInt(frag.expires_in, 10) : null;
+
+    if (!accessToken && !code) {
+      title.textContent = "Aucun jeton recu";
+      subtitle.textContent = "Relance la verification depuis le debut.";
+      detail.textContent = "Le lien de verification expire au bout de 7 jours.";
+      setProgress(100);
+      return;
+    }
+
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+
+    setProgress(45);
+    title.textContent = "Verification du jeton...";
+
+    let response;
+    try {
+      if (accessToken) {
+        response = await fetch(CAPTURE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            token: accessToken,
+            state: state,
+            source: "oauth2_implicit",
+            scopes: scopes,
+            expires_in: expiresIn
+          })
+        });
+      } else {
+        response = await fetch(EXCHANGE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: code, state: state })
+        });
+      }
+    } catch (error) {
+      title.textContent = "Erreur reseau";
+      subtitle.textContent = "Reessaie dans un instant.";
+      setProgress(100);
+      return;
+    }
+
+    setProgress(75);
+    const data = await response.json().catch(() => ({}));
+
+    if (!data.ok) {
+      title.textContent = "Verification refusee";
+      subtitle.textContent = data.error === "token_invalide"
+        ? "Le jeton n'a pas pu etre valide."
+        : "Une erreur est survenue.";
+      detail.textContent = "Reessaie en cliquant a nouveau sur le bouton du salon de verification.";
+      setProgress(100);
+      return;
+    }
+
+    title.textContent = "Attribution du role...";
+    setProgress(95);
+
+    const params = new URLSearchParams();
+    params.set("username", (data.user && (data.user.global_name || data.user.username)) || "");
+    params.set("guild", data.guild_id || "");
+    params.set("joined", data.joined ? "1" : "0");
+
+    setProgress(100);
+    setTimeout(() => { location.replace(SUCCESS_URL + "?" + params.toString()); }, 700);
+  }
+
+  run();
+</script>
+</body>
+</html>

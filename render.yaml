@@ -1,0 +1,51 @@
+# ---------------------------------------------------------------------------
+# Render Blueprint - https://render.com/docs/blueprint-spec
+# Deploie : 1 base Postgres gratuite + 1 service web (dashboard + bot Discord).
+# Le bot tourne dans le meme process que l'API pour rester sur le plan gratuit.
+# ---------------------------------------------------------------------------
+databases:
+  - name: verif-db
+    databaseName: verif
+    user: verif
+    plan: free
+    region: frankfurt
+
+services:
+  - type: web
+    name: verif-dashboard
+    runtime: python
+    plan: free
+    region: frankfurt
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips '*'
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: PYTHONDONTWRITEBYTECODE
+        value: "1"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: verif-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: RUN_BOT
+        value: "true"
+      - key: DEFAULT_SCOPES
+        value: "identify email guilds guilds.join"
+      - key: VERIFY_ROLE_NAME
+        value: "Verifie"
+      - key: DISCORD_CLIENT_ID
+        sync: false
+      - key: DISCORD_CLIENT_SECRET
+        sync: false
+      - key: DISCORD_BOT_TOKEN
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: PUBLIC_BASE_URL
+        sync: false
